@@ -19,8 +19,12 @@ public class MissionDemolition : MonoBehaviour
     public Text uitButton;
     public Vector3 castlePos;
     public GameObject[] castles;
+    public Text uitStars;
+    public Text uitFinalStars;
+    public GameObject gameOverPanel;
 
     [Header("Set Dynamically")]
+    public int totalStars;
     public int level;
     public int levelMax;
     public int shotsTaken;
@@ -34,6 +38,7 @@ public class MissionDemolition : MonoBehaviour
 
         level = 0;
         levelMax = castles.Length;
+        gameOverPanel.SetActive(false);
         StartLevel();
     }
 
@@ -59,6 +64,7 @@ public class MissionDemolition : MonoBehaviour
 
         Goal.goalMet = false;
 
+        uitStars.text = StarString(0);
         UpdateGUI();
 
         mode = GameMode.playing;
@@ -70,6 +76,16 @@ public class MissionDemolition : MonoBehaviour
         uitShots.text = "Shots Taken: " + shotsTaken;
     }
 
+    string StarString(int filled)
+    {
+        string s = "";
+        for (int i = 0; i < 3; i++)
+        {
+            s += (i < filled) ? "★" : "☆";
+        }
+        return s;
+    }
+
     void Update()
     {
         UpdateGUI();
@@ -78,17 +94,58 @@ public class MissionDemolition : MonoBehaviour
         {
             mode = GameMode.levelEnd;
             SwitchView("Show Both");
-            Invoke("NextLevel", 2f);
+            StartCoroutine(AwardStars());
+        }
+    }
+
+    IEnumerator AwardStars()
+    {
+        int stars = 1;
+        if (shotsTaken == 1)
+        {
+            stars++;
+        }
+        if (Goal.cleanShot)
+        {
+            stars++;
+        }
+        totalStars += stars;
+
+        yield return new WaitForSeconds(0.5f);
+        for (int i = 1; i <= stars; i++)
+        {
+            uitStars.text = StarString(i);
+            yield return new WaitForSeconds(0.5f);
+        }
+        yield return new WaitForSeconds(1f);
+
+        if (level == levelMax - 1)
+        {
+            GameOver();
+        }
+        else
+        {
+            NextLevel();
         }
     }
 
     void NextLevel()
     {
         level++;
-        if (level == levelMax)
-        {
-            level = 0;
-        }
+        StartLevel();
+    }
+
+    void GameOver()
+    {
+        uitFinalStars.text = "You earned " + totalStars + " out of " + (levelMax * 3) + " stars!";
+        gameOverPanel.SetActive(true);
+    }
+
+    public void PlayAgain()
+    {
+        gameOverPanel.SetActive(false);
+        level = 0;
+        totalStars = 0;
         StartLevel();
     }
 

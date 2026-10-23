@@ -8,6 +8,7 @@ public class Slingshot : MonoBehaviour
     [Header("Set In Inspector")]
     public GameObject prefabProjectile;
     public float velocityMult = 8f;
+    public AudioClip launchSound;
 
     [Header("Set Dynamically")]
     public GameObject launchPoint;
@@ -68,6 +69,7 @@ public class Slingshot : MonoBehaviour
             Rigidbody projRB = projectile.GetComponent<Rigidbody>();
             projRB.isKinematic = false;
             projRB.velocity = -mouseDelta * velocityMult;
+            GetComponent<AudioSource>().PlayOneShot(launchSound);
             FollowCam.POI = projectile;
             projectile = null;
             MissionDemolition.ShotFired();
